@@ -2,7 +2,6 @@
 
 var editFlag = false;
 var id = -1;
-var page = null;
 
 var uniqueId = function() {
 	var date = Date.now();
@@ -14,41 +13,193 @@ var theMessage = function(msgText, userName) {
 	return {
 		text: msgText,
 		name: userName,
-		edited: false,
-		deleted: false,
-		id: uniqueId()
+		date: getDate(),
+		id: uniqueId(),
+		isDeleted: false,
+		isEdited: false
 	};
 };
 
-function run(){
+var appState = {
+	mainUrl : 'chat',
+	messages:[],
+	name : '',
+	token : 'TN11EN',
+	cond: true
+};
+
+function getDate(){
+	return (new Date()).toLocaleDateString() + " " + (new Date()).toLocaleTimeString();
+}
+
+function defaultErrorHandler(message) {
+	appState.cond = false;
+	console.error(message);
+	restore();
+}
+
+function isError(text) {
+	if(text == "")
+		return false;
+	try {
+		var obj = JSON.parse(text);
+	} catch(ex) {
+		appState.cond = false;
+		restore();
+		return true;
+	}
+	return !!obj.error;
+}
+
+function run() {
 	document.addEventListener('click', delegateEvent);
-	page = restore() || {	
-							messages: [theMessage('Welcome!', 'Admin')],
-							name: "",
-							cond: true
-						};	
-	createPage(page);
+	restore();
+}
+
+function setName(value){
+	if(!value){
+		return;
+	}
+	appState.name = value;
+}
+
+function onInputNameButtonClick(evtObj){
+	var nameField;
+	nameField = (evtObj.target.classList.contains('btn-success')) ?
+		document.getElementById('nameInputText') : document.getElementById('nameChangeText');
+	setName(nameField.value);
+	createPage();
+	store();
+}
+
+function onSendMsgButtonClick(evtObj){
+	var textField = document.getElementById('inputMsgText');
+	(editFlag) ? sendEditedMsg(textField.value, evtObj) : sendMsg(textField.value, evtObj);
+	textField.value = '';
+}
+
+/*function onEditMsgButtonClick(evtObj){
+	var msg = (evtObj.target.hasChildNodes()) ? evtObj.target.parentElement : evtObj.target.parentElement.parentElement;
+	id = msg.getAttribute('id');
+	var indicator = (evtObj.target.hasChildNodes()) ? evtObj.target.firstElementChild.className : evtObj.target.className;
+	(indicator == "glyphicon glyphicon-pencil") ? editMsg(id) : removeMsg(id);
+}*/
+
+/*function removeMsg(id){
+	for (var i = 0; i < appState.messages.length; i++){
+		var msg = appState.messages[i];
+		if(msg.id == id && msg.name == appState.name){
+			msg.isDeleted = true;
+			break;
+		}
+		else if (msg.id == id){
+			alert("you can't delete this!");
+		}
+	}
+
+	del(appState.mainUrl, JSON.stringify({id: id}), function(){
+		editFlag = true;
+		restore();
+		createPage();
+	});
+}*/
+
+/*function editMsg(id){
+	var textToChange = "";
+	for (var i = 0; i < appState.messages.length; i++){
+		var msg = appState.messages[i];
+		if(msg.id == id && msg.name == appState.name && !msg.isDeleted){
+			appState.messages[i].isEdited = true;
+			textToChange = msg.text;
+			editFlag = true;
+			break;
+		}
+		else if (msg.id == id){
+			alert("you can't change this!");
+			break;
+		}
+	}
+	var field = document.getElementById("inputMsgText");
+	field.value = textToChange;
+}*/
+
+function sendMsg(value){
+	if(!value){
+		return;
+	}
+	var objMsg = theMessage(value, appState.name);
+	post(appState.mainUrl, JSON.stringify(objMsg), function(){
+		restore();
+	});
+}
+
+function getHistory(responseText, continueWith){
+	console.assert(responseText != null);
+
+	var response = JSON.parse(responseText);
+
+	appState.token = response.token;
+
+	if (editFlag){
+		appState.messages = response.messages;
+		editFlag = false;
+	}
+	else
+		appState.messages = appState.messages.concat(response.messages);
+
+	if(typeof(Storage) == "undefined") {
+		alert('localStorage is not accessible');
+		return;
+	}
+	var item = JSON.parse(localStorage.getItem("Chatting page"));
+	appState.name = item.name;
+
+	createPage();
+
+	continueWith && continueWith();
+}
+
+/*function sendEditedMsg(value){
+	var obj = {
+		id: id,
+		text: value
+	};
+
+	put(appState.mainUrl + '?token=' + 'TE11EN', JSON.stringify(obj), function(responseText){
+		getHistory(responseText);
+	});
+}*/
+
+function updateName(){
+	var items = document.getElementsByClassName('inputName')[0];
+	var greeting = greetingCreation(appState.name);
+	items.appendChild(greeting);
+	document.getElementById("sendBtn").style.visibility = "visible";
+	document.getElementById("coolMan").style.visibility = "visible";
+	document.getElementById("inputMsgText").style.visibility = "visible";
+	document.getElementById("form1").style.visibility = "hidden";
+	document.getElementById("form2").style.visibility = "visible";
 }
 
 function delegateEvent(evtObj) {
 	if(evtObj.type === 'click'){
-		if (evtObj.target.classList.contains('btn-success') 
+		if (evtObj.target.classList.contains('btn-success')
 			|| evtObj.target.classList.contains('btn-info'))
 			onInputNameButtonClick(evtObj);
 		else if (evtObj.target.classList.contains('btn-primary')){
 			onSendMsgButtonClick(evtObj);
 		}
-		else if (evtObj.target.classList.contains('btn-default') 
+		else if (evtObj.target.classList.contains('btn-default')
 			|| evtObj.target.classList.contains('glyphicon')){
 			onEditMsgButtonClick(evtObj);
 		}
 	}
 }
 
-function greetingCreation(value){
+function greetingCreation(){
 	var greeting = (document.getElementsByTagName('h3')[0]) || document.createElement('h3');
-	greeting.innerHTML = 'Hello, ' + page.name + '!';
-	return greeting; 
+	greeting.innerHTML = 'Hello, ' + appState.name + '!';
+	return greeting;
 }
 
 function setAttr(obj, attrType, attrValue){
@@ -87,23 +238,27 @@ function createMsg(msg){
 	userName.innerHTML = msg.name;
 	userMessage.appendChild(userName);
 
-	if(!msg.deleted){
-		if(msg.edited){
+	var date = childCreation("date", "h5");
+	date.innerHTML = msg.date;
+	userMessage.appendChild(date);
+
+	if(msg.isDeleted == "false" || !msg.isDeleted){
+		/*if(msg.isEdited == "true" || msg.isEdited){
 			var sp = iconCreation("glyphicon glyphicon-pencil", '#ff0000');
 			userMessage.appendChild(sp);
-		}
-		
+		}*/
+
 		var text = childCreation("text", 'pre');
 		text.innerHTML = msg.text;
 		userMessage.appendChild(text);
 
-		
-		if(msg.name == page.name){
+
+		/*if(msg.name == appState.name){
 			var delBtn = btnCreation("glyphicon glyphicon-pencil", '#003264');
 			var editBtn = btnCreation("glyphicon glyphicon-trash", '#003264');
 			userMessage.appendChild(delBtn);
 			userMessage.appendChild(editBtn);
-		}
+		}*/
 	}
 
 	else{
@@ -113,137 +268,98 @@ function createMsg(msg){
 	return userMessage;
 }
 
-function updateName(page){
-	var items = document.getElementsByClassName('inputName')[0];
-	var greeting = greetingCreation(page.name);
-	items.appendChild(greeting);
-	document.getElementById("sendBtn").style.visibility = "visible";
-	document.getElementById("coolMan").style.visibility = "visible";
-	document.getElementById("inputMsgText").style.visibility = "visible";
-	document.getElementById("form1").style.visibility = "hidden";
-	document.getElementById("form2").style.visibility = "visible";
-}
-
-function createPage(page){
-	serverCheck(page.cond);
-	if(page.name.length > 0){
-		updateName(page);		
+function createPage(){
+	serverCheck(appState.cond);
+	if(appState.name.length > 0){
+		updateName();
 	}
+
 	var items = document.getElementsByClassName('history')[0];
 	while(items.childNodes[0]){
 		items.removeChild(items.childNodes[0]);
-	}	
-	for(var i = 0; i < page.messages.length; i++){
-		var msg = page.messages[i];
+	}
+	for(var i = 0; i < appState.messages.length; i++){
+		var msg = appState.messages[i];
 		var userMessage = createMsg(msg);
 		items.appendChild(userMessage);
 	}
 	items.scrollTop = 9999;
 }
 
-function onInputNameButtonClick(evtObj){
-	var nameField;
-	nameField = (evtObj.target.classList.contains('btn-success')) ? 
-				document.getElementById('nameInputText') : document.getElementById('nameChangeText');
-	setName(nameField.value);
-	createPage(page);
-	store(page);
-}
-
-function onSendMsgButtonClick(evtObj){
-	var textField = document.getElementById('inputMsgText');
-	(editFlag) ? sendEditedMsg(textField.value, evtObj) : sendMsg(textField.value, evtObj);
-	textField.value = '';
-	createPage(page);
-	store(page);
-}
-
-function onEditMsgButtonClick(evtObj){
-	var msg = (evtObj.target.hasChildNodes()) ? evtObj.target.parentElement : evtObj.target.parentElement.parentElement;
-	id = msg.getAttribute('id');
-	var indicator = (evtObj.target.hasChildNodes()) ? evtObj.target.firstElementChild.className : evtObj.target.className;
-	(indicator == "glyphicon glyphicon-pencil") ? editMsg(id) : removeMsg(id);
-}
-
-function editMsg(id){
-	var textToChange = "";
-	for (var i = 0; i < page.messages.length; i++){
-		var msg = page.messages[i];
-		if(msg.id == id && msg.name == page.name && msg.id != 'deleted'){
-			textToChange = msg.text;
-			editFlag = true;
-			break;
-		}
-		else if (msg.id == id){
-			alert("you can't change this!");
-			break;
-		}
-	}
-	var field = document.getElementById("inputMsgText");
-	field.value = textToChange;	
-}
-
-function removeMsg(id){
-	for (var i = 0; i < page.messages.length; i++){
-		var msg = page.messages[i];
-		if(msg.id == id && msg.name == page.name){
-			msg.deleted = true;
-			/*for (var j = i; j < page.messages.length - 1; j++)
-				page.messages[j] = page.messages[j + 1];
-			page.messages.pop();*/
-			break;
-		}
-		else if (msg.id == id){
-			alert("you can't delete this!");
-		}
-	}
-	createPage(page);
-	store(page);
-}
-
-function sendMsg(value, evtObj){
-	if(!value){
-		return;
-	}
-	var objMsg = theMessage(value, page.name);
-	page.messages.push(objMsg);
-}
-
-function sendEditedMsg(value, evtObj){
-	for (var i = 0; i < page.messages.length; i++){
-		var msg = page.messages[i];
-		if(msg.id == id){
-			page.messages[i] = theMessage(value, page.name);
-			page.messages[i].edited = true;
-			break;
-		}
-	}
-	editFlag = false;
-}
-
-function setName(value){
-	if(!value){
-		return;
-	}
-	page.name = value;
-}
-
-function store(pageToSave) {
+function store() {
 	if(typeof(Storage) == "undefined") {
 		alert('localStorage is not accessible');
 		return;
 	}
 	localStorage.clear();
-	localStorage.setItem("Chatting page", JSON.stringify(pageToSave));
+	localStorage.setItem("Chatting page", JSON.stringify(appState));
 }
 
-function restore() {
-	if(typeof(Storage) == "undefined") {
-		alert('localStorage is not accessible');
-		return;
+function restore(continueWith) {
+	var url =  appState.mainUrl + '?token=';
+	url += (editFlag) ? "TN11EN" : appState.token;
+
+	get(url, function(responseText) {
+		getHistory(responseText, continueWith);
+	});
+}
+
+function get(url, continueWith, continueWithError) {
+	ajax('GET', url, null, continueWith, continueWithError);
+}
+
+function post(url, data, continueWith, continueWithError) {
+	ajax('POST', url, data, continueWith, continueWithError);
+}
+
+function put(url, data, continueWith, continueWithError) {
+	ajax('PUT', url, data, continueWith, continueWithError);
+}
+
+function del(url, data, continueWith, continueWithError){
+	ajax('DELETE', url, data, continueWith, continueWithError);
+}
+
+function ajax(method, url, data, continueWith, continueWithError) {
+	var xhr = new XMLHttpRequest();
+
+	continueWithError = continueWithError || defaultErrorHandler;
+	xhr.open(method || 'GET', url, true);
+
+	xhr.onload = function () {
+		if (xhr.readyState !== 4)
+			return;
+
+		if(xhr.status != 200) {
+			continueWithError('Error on the server side, response ' + xhr.status);
+			return;
+		}
+
+		if(isError(xhr.responseText)) {
+			appState.cond = false;
+			continueWithError('Error on the server side, response ' + xhr.responseText);
+			return;
+		}
+
+		continueWith(xhr.responseText);
+	};
+
+	xhr.ontimeout = function () {
+		continueWithError('Server timed out !');
 	}
-	var item = localStorage.getItem("Chatting page");
-	return item && JSON.parse(item);
+
+	xhr.onerror = function (e) {
+		appState.cond = false;
+		var errMsg = 'Server connection error !\n'+
+			'\n' +
+			'Check if \n'+
+			'- server is active\n'+
+			'- server sends header "Access-Control-Allow-Origin:*"';
+
+		continueWithError(errMsg);
+	};
+
+	xhr.send(data);
 }
 
 function serverCheck(flag){
