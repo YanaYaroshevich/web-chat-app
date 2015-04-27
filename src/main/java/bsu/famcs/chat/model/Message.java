@@ -6,13 +6,19 @@ public class Message{
     private String date;
     private String id;
     private boolean isDeleted;
+    private boolean isEdited;
 
-    public Message(String name, String text, String date, String id, boolean isDeleted){
+    public Message(String name, String text, String date, String id, boolean isDeleted, boolean isEdited){
         this.name = name;
         this.text = text;
         this.date = date;
         this.id = id;
         this.isDeleted = isDeleted;
+        this.isEdited = isEdited;
+    }
+
+    public boolean getIsEdited(){
+        return this.isEdited;
     }
 
     public String getId(){
@@ -53,6 +59,10 @@ public class Message{
 
     public void setDate(String date){
         this.date = date;
+    }
+
+    public void setIsEdited(boolean isEdited){
+        this.isEdited = isEdited;
     }
 
     @Override

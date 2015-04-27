@@ -57,7 +57,7 @@ public final class MessageUtil {
         Object date = getDate();
 
         if (text != null && name != null) {
-            return new Message((String) name, (String) text, (String) date, (String) id, false);
+            return new Message((String) name, (String) text, (String) date, (String) id, false, false);
         }
         return null;
     }

@@ -39,6 +39,7 @@ public final class XMLHistoryUtil {
     private static final String DATE = "date";
     private static final String ISDELETED = "isDeleted";
     private static final String TEXT = "text";
+    private static final String ISEDITED = "isEdited";
 
 
     private XMLHistoryUtil() {
@@ -89,6 +90,10 @@ public final class XMLHistoryUtil {
         isDeleted.appendChild(document.createTextNode(Boolean.toString(message.getIsDeleted())));
         messageElement.appendChild(isDeleted);
 
+        Element isEdited = document.createElement(ISEDITED);
+        isEdited.appendChild(document.createTextNode(Boolean.toString(message.getIsEdited())));
+        messageElement.appendChild(isEdited);
+
         DOMSource source = new DOMSource(document);
 
         Transformer transformer = getTransformer();
@@ -117,7 +122,8 @@ public final class XMLHistoryUtil {
             String name = messageElement.getElementsByTagName(NAME).item(0).getTextContent();
             String date = messageElement.getElementsByTagName(DATE).item(0).getTextContent();
             boolean isDeleted = Boolean.valueOf(messageElement.getElementsByTagName(ISDELETED).item(0).getTextContent());
-            messages.add(new Message(name, text, date, id, isDeleted));
+            boolean isEdited = Boolean.valueOf(messageElement.getElementsByTagName(ISEDITED).item(0).getTextContent());
+            messages.add(new Message(name, text, date, id, isDeleted, isEdited));
         }
         return messages;
     }
