@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 
 import bsu.famcs.chat.model.Message;
 import bsu.famcs.chat.model.MessageStorage;
+import java.util.List;
 import bsu.famcs.chat.storage.XMLHistoryUtil;
 import bsu.famcs.chat.util.ServletUtil;
 
@@ -86,7 +87,11 @@ public class MessageServlet extends HttpServlet {
 
     private void loadHistory() throws SAXException, IOException, ParserConfigurationException, TransformerException  {
         if (XMLHistoryUtil.doesStorageExist()) {
-            MessageStorage.addAll(XMLHistoryUtil.getMessages());
+            List<Message> messageList = XMLHistoryUtil.getMessages();
+            MessageStorage.addAll(messageList);
+            for (Message msg : messageList){
+                System.out.println(msg.getDate() + " " + msg.getName() + ": " + msg.getText());
+            }
         } else {
             XMLHistoryUtil.createStorage();
         }
