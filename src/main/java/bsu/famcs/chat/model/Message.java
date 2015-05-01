@@ -5,21 +5,17 @@ public class Message{
     private String text;
     private String date;
     private String id;
-    private boolean isDeleted;
-    private boolean isEdited;
+    private String method;
 
-    public Message(String name, String text, String date, String id, boolean isDeleted, boolean isEdited){
+    public Message(String name, String text, String date, String id, String method){
         this.name = name;
         this.text = text;
         this.date = date;
         this.id = id;
-        this.isDeleted = isDeleted;
-        this.isEdited = isEdited;
+        this.method = method;
     }
 
-    public boolean getIsEdited(){
-        return this.isEdited;
-    }
+    public String getMethod(){ return this.method; }
 
     public String getId(){
         return this.id;
@@ -29,17 +25,9 @@ public class Message{
         return this.name;
     }
 
-    public String getText(){
-        return this.text;
-    }
+    public String getText(){ return this.text; }
 
-    public String getDate(){
-        return this.date;
-    }
-
-    public boolean getIsDeleted(){
-        return this.isDeleted;
-    }
+    public String getDate() { return this.date; }
 
     public void setId(String id){
         this.id = id;
@@ -49,28 +37,22 @@ public class Message{
         this.name = name;
     }
 
-    public void setText(String text){
-        this.text = text;
-    }
-
-    public void setIsDeleted(boolean isDeleted){
-        this.isDeleted = isDeleted;
-    }
+    public void setText(String text){ this.text = text; }
 
     public void setDate(String date){
         this.date = date;
     }
 
-    public void setIsEdited(boolean isEdited){
-        this.isEdited = isEdited;
+    public void setMethod(String method){
+        this.method = method;
     }
 
     @Override
-     public String toString() {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{\"id\":\"").append(id).append("\", \"name\":\"").append(name)
-        .append("\", \"text\":\"").append(text).append("\", \"date\":\"").append(date)
-        .append("\", \"isDeleted\":\"").append(isDeleted).append("\"}");
+                .append("\", \"text\":\"").append(text).append("\", \"date\":\"").append(date)
+                .append("\", \"method\":\"").append(method).append("\"}");
         return sb.toString();
-     }
+    }
 }

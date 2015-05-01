@@ -4,14 +4,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import bsu.famcs.chat.model.Message;
-import bsu.famcs.chat.model.MessageStorage;
+import bsu.famcs.chat.model.IdStorage;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
+
+import bsu.famcs.chat.model.MessageStorage;
 import bsu.famcs.chat.storage.XMLHistoryUtil;
 import bsu.famcs.chat.util.ServletUtil;
 
 import static bsu.famcs.chat.util.MessageUtil.*;
-import static bsu.famcs.chat.util.ServletUtil.APPLICATION_JSON;
-import static bsu.famcs.chat.util.ServletUtil.getMessageBody;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -20,11 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
 @WebServlet("/chat")
@@ -63,13 +64,26 @@ public class MessageServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.info("doPost");
+        System.out.println("doPost");
         String data = ServletUtil.getMessageBody(request);
+        System.out.println("doPost");
         logger.info(data);
+        System.out.println("doPost");
         try {
+            System.out.println("doPost");
             JSONObject json = stringToJson(data);
+            System.out.println("doPost");
+            json.put(METHOD, "POST");
+            System.out.println("doPost");
             Message message = jsonToMessage(json);
+            System.out.println("doPost");
+
+            IdStorage.addId(message.getId());
+            XMLHistoryUtil.addId(message.getId());
+
             MessageStorage.addMessage(message);
             XMLHistoryUtil.addMessage(message);
+
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             logger.error(e);
@@ -77,11 +91,22 @@ public class MessageServlet extends HttpServlet {
         }
     }
 
+    private List<Message> difference(List<String> ids){
+        List<Message> difference = Collections.synchronizedList(new ArrayList<Message>());
+        for (int i = 0; i < ids.size(); i++){
+            Message curMsg = MessageStorage.getMessageById(ids.get(i));
+            if(!difference.contains(curMsg))
+                difference.add(curMsg);
+        }
+        return difference;
+    }
+
     @SuppressWarnings("unchecked")
     private String formResponse(int index) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put(MESSAGES, MessageStorage.getSubMessagesByIndex(index));
-        jsonObject.put(TOKEN, getToken(MessageStorage.getSize()));
+        List<String> ids = IdStorage.getSubIdsByIndex(index);
+        jsonObject.put(MESSAGES, difference(ids));
+        jsonObject.put(TOKEN, getToken(IdStorage.getSize()));
         return jsonObject.toJSONString();
     }
 
@@ -94,6 +119,12 @@ public class MessageServlet extends HttpServlet {
             }
         } else {
             XMLHistoryUtil.createStorage();
+        }
+        if (XMLHistoryUtil.doesIdStorageExist()){
+            List<String> idList = XMLHistoryUtil.getIds();
+            IdStorage.addAll(idList);
+        } else {
+            XMLHistoryUtil.createIdStorage();
         }
     }
 }

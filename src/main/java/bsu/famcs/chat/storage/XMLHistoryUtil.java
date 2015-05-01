@@ -32,17 +32,32 @@ import org.xml.sax.SAXException;
 
 public final class XMLHistoryUtil {
     private static final String STORAGE_LOCATION = System.getProperty("user.home") +  File.separator + "history.xml"; // history.xml will be located in the home directory
+    private static final String ID_STORAGE_LOCATION = System.getProperty("user.home") +  File.separator + "idHistory.xml";
     private static final String MESSAGES = "messages";
+    private static final String IDS = "ids";
     private static final String MESSAGE = "message";
     private static final String NAME = "name";
     private static final String ID = "id";
+    private static final String VALUE = "value";
     private static final String DATE = "date";
-    private static final String ISDELETED = "isDeleted";
+    private static final String METHOD = "method";
     private static final String TEXT = "text";
-    private static final String ISEDITED = "isEdited";
 
+    private XMLHistoryUtil() { }
 
-    private XMLHistoryUtil() {
+    public static synchronized void createIdStorage() throws ParserConfigurationException, TransformerException {
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+        Document doc = docBuilder.newDocument();
+        Element rootElement = doc.createElement(IDS);
+        doc.appendChild(rootElement);
+
+        Transformer transformer = getTransformer();
+
+        DOMSource source = new DOMSource(doc);
+        StreamResult result = new StreamResult(new File(ID_STORAGE_LOCATION));
+        transformer.transform(source, result);
     }
 
     public static synchronized void createStorage() throws ParserConfigurationException, TransformerException {
@@ -86,24 +101,51 @@ public final class XMLHistoryUtil {
         text.appendChild(document.createTextNode(message.getText()));
         messageElement.appendChild(text);
 
-        Element isDeleted = document.createElement(ISDELETED);
-        isDeleted.appendChild(document.createTextNode(Boolean.toString(message.getIsDeleted())));
+        Element isDeleted = document.createElement(METHOD);
+        isDeleted.appendChild(document.createTextNode(message.getMethod()));
         messageElement.appendChild(isDeleted);
-
-        Element isEdited = document.createElement(ISEDITED);
-        isEdited.appendChild(document.createTextNode(Boolean.toString(message.getIsEdited())));
-        messageElement.appendChild(isEdited);
 
         DOMSource source = new DOMSource(document);
 
         Transformer transformer = getTransformer();
 
         StreamResult result = new StreamResult(STORAGE_LOCATION);
+
+        transformer.transform(source, result);
+    }
+
+    public static synchronized void addId(String id) throws ParserConfigurationException, SAXException, IOException, TransformerException {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.parse(ID_STORAGE_LOCATION);
+        document.getDocumentElement().normalize();
+
+        Element root = document.getDocumentElement(); // Root <ids> element
+
+        Element idElement = document.createElement(ID);
+
+        root.appendChild(idElement);
+
+        Element value = document.createElement(VALUE);
+        value.appendChild(document.createTextNode(id));
+        idElement.appendChild(value);
+
+        DOMSource source = new DOMSource(document);
+
+        Transformer transformer = getTransformer();
+
+        StreamResult result = new StreamResult(ID_STORAGE_LOCATION);
+
         transformer.transform(source, result);
     }
 
     public static synchronized boolean doesStorageExist() {
         File file = new File(STORAGE_LOCATION);
+        return file.exists();
+    }
+
+    public static synchronized boolean doesIdStorageExist() {
+        File file = new File(ID_STORAGE_LOCATION);
         return file.exists();
     }
 
@@ -121,11 +163,28 @@ public final class XMLHistoryUtil {
             String text = messageElement.getElementsByTagName(TEXT).item(0).getTextContent();
             String name = messageElement.getElementsByTagName(NAME).item(0).getTextContent();
             String date = messageElement.getElementsByTagName(DATE).item(0).getTextContent();
-            boolean isDeleted = Boolean.valueOf(messageElement.getElementsByTagName(ISDELETED).item(0).getTextContent());
-            boolean isEdited = Boolean.valueOf(messageElement.getElementsByTagName(ISEDITED).item(0).getTextContent());
-            messages.add(new Message(name, text, date, id, isDeleted, isEdited));
+            String method = messageElement.getElementsByTagName(METHOD).item(0).getTextContent();
+
+            messages.add(new Message(name, text, date, id, method));
         }
         return messages;
+    }
+
+    public static synchronized List<String> getIds() throws SAXException, IOException, ParserConfigurationException {
+        List<String> ids = new ArrayList<String>();
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.parse(ID_STORAGE_LOCATION);
+        document.getDocumentElement().normalize();
+        Element root = document.getDocumentElement(); // Root <ids> element
+        NodeList idList = root.getElementsByTagName(ID);
+        for (int i = 0; i < idList.getLength(); i++) {
+            Element idElement = (Element) idList.item(i);
+            String id = idElement.getElementsByTagName(VALUE).item(0).getTextContent();
+
+            ids.add(id);
+        }
+        return ids;
     }
 
     public static synchronized int getStorageSize() throws SAXException, IOException, ParserConfigurationException {
@@ -135,6 +194,15 @@ public final class XMLHistoryUtil {
         document.getDocumentElement().normalize();
         Element root = document.getDocumentElement(); // Root <messages> element
         return root.getElementsByTagName(MESSAGE).getLength();
+    }
+
+    public static synchronized int getIdStorageSize() throws SAXException, IOException, ParserConfigurationException {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.parse(ID_STORAGE_LOCATION);
+        document.getDocumentElement().normalize();
+        Element root = document.getDocumentElement(); // Root <messages> element
+        return root.getElementsByTagName(ID).getLength();
     }
 
     private static Node getNodeById(Document doc, String id) throws XPathExpressionException {

@@ -19,9 +19,11 @@ public final class MessageUtil {
     private static final String EN = "EN";
     private static final String TEXT = "text";
     private static final String NAME = "name";
+    public static final String METHOD = "method";
+    private static final String ID = "id";
+    private static final String DATE = "date";
 
-    private MessageUtil() {
-    }
+    private MessageUtil() {}
 
     public static String getToken(int index) {
         Integer number = index * 8 + 11;
@@ -39,25 +41,22 @@ public final class MessageUtil {
         return formatter.format(new Date());
     }
 
-    public static String getUniqueId(){
-        Date date = new Date();
-        Random rand = new Random(date.getTime());
-        return ((Integer)Math.abs(rand.nextInt() * rand.nextInt())).toString();
-    }
-
     public static JSONObject stringToJson(String data) throws ParseException {
         JSONParser parser = new JSONParser();
         return (JSONObject) parser.parse(data.trim());
     }
 
     public static Message jsonToMessage(JSONObject json) {
-        Object id = getUniqueId();
+        Object id = json.get(ID);
         Object text = json.get(TEXT);
         Object name = json.get(NAME);
-        Object date = getDate();
+        Object method = json.get(METHOD);
+        Object date = (((String)json.get(METHOD)).compareTo("DELETE") == 0 ||
+                      ((String)json.get(METHOD)).compareTo("PUT") == 0) ?  getDate() : json.get(DATE);
+
 
         if (text != null && name != null) {
-            return new Message((String) name, (String) text, (String) date, (String) id, false, false);
+            return new Message((String) name, (String) text, (String) date, (String) id, (String) method);
         }
         return null;
     }

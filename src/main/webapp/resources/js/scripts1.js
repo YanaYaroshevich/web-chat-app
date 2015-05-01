@@ -10,7 +10,7 @@ var uniqueId = function() {
 };
 
 var appState = {
-				mainUrl : 'http://localhost:999/chat',
+				mainUrl : 'chat',
 				messages:[],
 				name : '',
 				token : 'TE11EN',
@@ -85,7 +85,7 @@ function delegateEvent(evtObj) {
 			|| evtObj.target.classList.contains('btn-info'))
 			onInputNameButtonClick(evtObj);
 		else if (evtObj.target.classList.contains('btn-primary')){
-			onSendMsgButtonClick(evtObj);
+			onSendMsgButtonClick();
 		}
 		else if (evtObj.target.classList.contains('btn-default') 
 			|| evtObj.target.classList.contains('glyphicon')){
@@ -103,9 +103,9 @@ function onInputNameButtonClick(evtObj){
 	store();
 }
 
-function onSendMsgButtonClick(evtObj){
+function onSendMsgButtonClick(){
 	var textField = document.getElementById('inputMsgText');
-	(editFlag) ? sendEditedMsg(textField.value, evtObj) : sendMsg(textField.value, evtObj);
+	(editFlag) ? sendEditedMsg(textField.value) : sendMsg(textField.value);
 	editFlag = false;
 	textField.value = '';
 }
@@ -121,7 +121,7 @@ function editMsg(id){
 	var textToChange = "";
 	for (var i = 0; i < appState.messages.length; i++){
 		var msg = appState.messages[i];
-		if(msg.id == id && msg.name == appState.name && !msg.isDeleted){
+		if(msg.id == id && msg.name == appState.name && msg.method != "DELETE"){
 			textToChange = msg.text;
 			editFlag = true;
 			break;
@@ -136,7 +136,7 @@ function editMsg(id){
 	field.value = textToChange;	
 }
 
-function sendEditedMsg(value, evtObj){
+function sendEditedMsg(value){
 	var obj = {
 		id: id,
 		text: value
@@ -147,7 +147,7 @@ function sendEditedMsg(value, evtObj){
     });
 }
 
-function sendMsg(value, evtObj){
+function sendMsg(value){
 	if(!value){
 		return;
 	}
@@ -155,7 +155,7 @@ function sendMsg(value, evtObj){
 		text: value,
 		name: appState.name,
 		date: getDate(),
-		id: uniqueId(),
+		id: uniqueId()
 	};
 	post(appState.mainUrl, JSON.stringify(objMsg), function(){
 		console.log("POST successful");
