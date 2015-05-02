@@ -5,11 +5,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Random;
-import java.util.TimeZone;
-
 import java.lang.Object;
 
 public final class MessageUtil {
@@ -20,7 +15,7 @@ public final class MessageUtil {
     private static final String TEXT = "text";
     private static final String NAME = "name";
     public static final String METHOD = "method";
-    private static final String ID = "id";
+    public static final String ID = "id";
     private static final String DATE = "date";
 
     private MessageUtil() {}
@@ -34,13 +29,6 @@ public final class MessageUtil {
         return (Integer.valueOf(token.substring(2, token.length() - 2)) - 11) / 8;
     }
 
-    private static String getDate() {
-        DateFormat formatter;
-        formatter = DateFormat.getDateTimeInstance();
-        formatter.setTimeZone(TimeZone.getTimeZone("Europe/Minsk"));
-        return formatter.format(new Date());
-    }
-
     public static JSONObject stringToJson(String data) throws ParseException {
         JSONParser parser = new JSONParser();
         return (JSONObject) parser.parse(data.trim());
@@ -51,8 +39,7 @@ public final class MessageUtil {
         Object text = json.get(TEXT);
         Object name = json.get(NAME);
         Object method = json.get(METHOD);
-        Object date = (((String)json.get(METHOD)).compareTo("DELETE") == 0 ||
-                      ((String)json.get(METHOD)).compareTo("PUT") == 0) ?  getDate() : json.get(DATE);
+        Object date = json.get(DATE);
 
 
         if (text != null && name != null) {

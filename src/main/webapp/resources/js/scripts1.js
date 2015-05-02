@@ -54,7 +54,8 @@ function getHistory(responseText, continueWith){
 	var item = JSON.parse(localStorage.getItem("Chatting page"));
 	appState.name = item.name;
 		
-	createPage();
+	if (response.messages.length > 0)
+		createPage();
 		
 	continueWith && continueWith();
 }

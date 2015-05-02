@@ -28,10 +28,18 @@ import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.xml.sax.SAXException;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 @WebServlet("/chat")
 public class MessageServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static Logger logger = Logger.getLogger(MessageServlet.class.getName());
+    private final Lock _mutex = new ReentrantLock(true);
 
     @Override
     public void init() throws ServletException {
@@ -64,31 +72,62 @@ public class MessageServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.info("doPost");
-        System.out.println("doPost");
         String data = ServletUtil.getMessageBody(request);
-        System.out.println("doPost");
         logger.info(data);
-        System.out.println("doPost");
         try {
-            System.out.println("doPost");
             JSONObject json = stringToJson(data);
-            System.out.println("doPost");
             json.put(METHOD, "POST");
-            System.out.println("doPost");
             Message message = jsonToMessage(json);
-            System.out.println("doPost");
 
             IdStorage.addId(message.getId());
-            XMLHistoryUtil.addId(message.getId());
-
             MessageStorage.addMessage(message);
+
+            _mutex.lock();
+            XMLHistoryUtil.addId(message.getId());
             XMLHistoryUtil.addMessage(message);
+            _mutex.unlock();
 
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             logger.error(e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        logger.info("doDelete");
+        String data = ServletUtil.getMessageBody(request);
+        logger.info(data);
+        try {
+            JSONObject json = stringToJson(data);
+            String id = json.get(ID).toString();
+            Message messageToUpdate = MessageStorage.getMessageById(id);
+            if (messageToUpdate != null) {
+                messageToUpdate.setDate(getDate());
+                messageToUpdate.setMethod("DELETE");
+                messageToUpdate.setText("");
+
+                _mutex.lock();
+                XMLHistoryUtil.updateData(messageToUpdate);
+                XMLHistoryUtil.addId(id);
+                _mutex.unlock();
+                IdStorage.addId(id);
+                response.setStatus(HttpServletResponse.SC_OK);
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task does not exist");
+            }
+        } catch (Exception e) {
+            logger.error(e);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
+
+    private static String getDate() {
+        DateFormat formatter;
+        formatter = DateFormat.getDateTimeInstance();
+        formatter.setTimeZone(TimeZone.getTimeZone("Europe/Minsk"));
+        return formatter.format(new Date());
     }
 
     private List<Message> difference(List<String> ids){

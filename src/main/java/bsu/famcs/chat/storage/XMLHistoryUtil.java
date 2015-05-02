@@ -187,6 +187,45 @@ public final class XMLHistoryUtil {
         return ids;
     }
 
+    public static synchronized void updateData(Message message) throws ParserConfigurationException, SAXException, IOException, TransformerException, XPathExpressionException {
+        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        Document document = documentBuilder.parse(STORAGE_LOCATION);
+        document.getDocumentElement().normalize();
+        Node messageToUpdate = getNodeById(document, message.getId());
+
+        if (messageToUpdate != null) {
+
+            NodeList childNodes = messageToUpdate.getChildNodes();
+
+            for (int i = 0; i < childNodes.getLength(); i++) {
+
+                Node node = childNodes.item(i);
+
+                if (TEXT.equals(node.getNodeName())) {
+                    node.setTextContent(message.getText());
+                }
+
+                if (METHOD.equals(node.getNodeName())) {
+                    node.setTextContent(message.getMethod());
+                }
+
+                if (DATE.equals(node.getNodeName())) {
+                    node.setTextContent(message.getDate());
+                }
+
+            }
+
+            Transformer transformer = getTransformer();
+
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(new File(STORAGE_LOCATION));
+            transformer.transform(source, result);
+        } else {
+            throw new NullPointerException();
+        }
+    }
+
     public static synchronized int getStorageSize() throws SAXException, IOException, ParserConfigurationException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
