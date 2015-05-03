@@ -10,12 +10,13 @@ Both of these histories are added to XML-files. It will help us to restart last 
 AJAX Polling is done in previous task with the help of IdStorage.
 
 Messages are not deleted from history.xml. They stay there in format: 
-<message id="id">
-  <date>date</date>
-  <name>name</name>
-  <text/>
-  <method>DELETE</method>
-</message>
+{
+    "id" : "id",
+    "date" : "date",
+    "name" : "name",
+    "text" : "",
+    "method" : "DELETE"
+}
 
 Method PUT is not allowed.
 
