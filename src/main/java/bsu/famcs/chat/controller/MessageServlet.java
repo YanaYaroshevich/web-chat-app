@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import bsu.famcs.chat.model.Message;
 import bsu.famcs.chat.model.IdStorage;
 
+import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
@@ -23,7 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPathExpressionException;
 
+import jdk.nashorn.internal.parser.JSONParser;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.xml.sax.SAXException;
@@ -85,10 +88,12 @@ public class MessageServlet extends HttpServlet {
             _mutex.lock();
             XMLHistoryUtil.addId(message.getId());
             XMLHistoryUtil.addMessage(message);
+            response.setStatus(HttpServletResponse.SC_OK);
             _mutex.unlock();
 
-            response.setStatus(HttpServletResponse.SC_OK);
-        } catch (Exception e) {
+
+        } catch (org.json.simple.parser.ParseException | ParserConfigurationException | SAXException | TransformerException e) {
+            System.out.println(e.getStackTrace());
             logger.error(e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
@@ -118,6 +123,7 @@ public class MessageServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task does not exist");
             }
         } catch (Exception e) {
+            System.out.println(e.getStackTrace());
             logger.error(e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
