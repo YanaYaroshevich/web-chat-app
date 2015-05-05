@@ -2,6 +2,7 @@
 
 var id = -1;
 var editFlag = false;
+var inputNameFlag = false;
 
 var uniqueId = function() {
 	var date = Date.now();
@@ -22,7 +23,7 @@ function run() {
 	restore();
 }
 
-function restore(continueWith) {
+function restore() {
 	var url =  appState.mainUrl + '?token=' + appState.token;
 
 	get(url, function(responseText) {
@@ -100,6 +101,9 @@ function onInputNameButtonClick(evtObj){
 	nameField = (evtObj.target.classList.contains('btn-success')) ? 
 				document.getElementById('nameInputText') : document.getElementById('nameChangeText');
 	setName(nameField.value);
+	//createPage();
+
+
 	createPage();
 	store();
 }
