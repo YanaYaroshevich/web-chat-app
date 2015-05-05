@@ -4,6 +4,7 @@
 <html>
     <head>
         <meta http-equiv = "Content-Type" content = "text/html; charset=UTF-8">
+        <link rel = "shortcut icon" href = "resources/images/sadCloud.png" type = "image/png">
         <title>404 error</title>
     </head>
     <body bgcolor = #FFFFBE>
