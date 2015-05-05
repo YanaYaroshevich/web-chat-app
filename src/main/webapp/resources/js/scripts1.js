@@ -2,7 +2,7 @@
 
 var id = -1;
 var editFlag = false;
-var inputNameFlag = false;
+var newMessagesFlag = false;
 
 var uniqueId = function() {
 	var date = Date.now();
@@ -54,9 +54,11 @@ function getHistory(responseText, continueWith){
 	}
 	var item = JSON.parse(localStorage.getItem("Chatting page"));
 	appState.name = item.name;
-		
-	if (response.messages.length > 0)
-		createPage();
+
+	if(response.messages.length > 0)
+		newMessagesFlag = true;
+
+	createPage();
 		
 	continueWith && continueWith();
 }
@@ -78,7 +80,10 @@ function createPage(){
 		items.appendChild(userMessage);
 	}
 
-	items.scrollTop = 9999;
+	if(newMessagesFlag) {
+		items.scrollTop = 9999;
+		newMessagesFlag = false;
+	}
 }
 
 function delegateEvent(evtObj) {
@@ -101,8 +106,6 @@ function onInputNameButtonClick(evtObj){
 	nameField = (evtObj.target.classList.contains('btn-success')) ? 
 				document.getElementById('nameInputText') : document.getElementById('nameChangeText');
 	setName(nameField.value);
-	//createPage();
-
 
 	createPage();
 	store();

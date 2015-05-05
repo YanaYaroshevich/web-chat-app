@@ -74,21 +74,17 @@ public class MessageServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        System.out.println("doPost");
         logger.info("doPost");
         String data = ServletUtil.getMessageBody(request);
         logger.info(data);
         try {
-            System.out.println("doPost");
             JSONObject json = stringToJson(data);
             json.put(METHOD, "POST");
             Message message = jsonToMessage(json);
 
-            System.out.println("doPost");
             IdStorage.addId(message.getId());
             MessageStorage.addMessage(message);
 
-            System.out.println("doPost");
             _mutex.lock();
             XMLHistoryUtil.addId(message.getId());
             XMLHistoryUtil.addMessage(message);
