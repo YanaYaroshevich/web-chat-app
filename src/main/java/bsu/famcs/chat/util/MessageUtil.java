@@ -6,6 +6,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.lang.Object;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 public final class MessageUtil {
     public static final String TOKEN = "token";
@@ -29,6 +32,13 @@ public final class MessageUtil {
         return (Integer.valueOf(token.substring(2, token.length() - 2)) - 11) / 8;
     }
 
+    private static String getDate() {
+        DateFormat formatter;
+        formatter = DateFormat.getDateTimeInstance();
+        formatter.setTimeZone(TimeZone.getTimeZone("Europe/Minsk"));
+        return formatter.format(new Date());
+    }
+
     public static JSONObject stringToJson(String data) throws ParseException {
         JSONParser parser = new JSONParser();
         return (JSONObject) parser.parse(data.trim());
@@ -39,7 +49,7 @@ public final class MessageUtil {
         Object text = json.get(TEXT);
         Object name = json.get(NAME);
         Object method = json.get(METHOD);
-        Object date = json.get(DATE);
+        Object date = (method.toString().compareTo("DELETE") == 0 || method.toString().compareTo("PUT") == 0) ? getDate() : json.get(DATE);
 
 
         if (text != null && name != null) {
