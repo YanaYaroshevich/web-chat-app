@@ -76,19 +76,23 @@ public class MessageServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.info("doPost");
         String data = ServletUtil.getMessageBody(request);
+        System.out.println("data: " + data);
         logger.info(data);
         try {
             JSONObject json = stringToJson(data);
+            System.out.println("json: " + json);
             json.put(METHOD, "POST");
             Message message = jsonToMessage(json);
+            System.out.println("message: " + message);
 
             IdStorage.addId(message.getId());
             MessageStorage.addMessage(message);
+            System.out.println(MessageStorage.getStorage().toString());
 
-            _mutex.lock();
+            //_mutex.lock();
             XMLHistoryUtil.addId(message.getId());
             XMLHistoryUtil.addMessage(message);
-            _mutex.unlock();
+            //_mutex.unlock();
 
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (org.json.simple.parser.ParseException | ParserConfigurationException | SAXException | TransformerException e) {

@@ -28,7 +28,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-//import sun.plugin2.message.Message;
 
 public final class XMLHistoryUtil {
     private static final String STORAGE_LOCATION = System.getProperty("user.home") +  File.separator + "history.xml"; // history.xml will be located in the home directory
@@ -100,6 +99,7 @@ public final class XMLHistoryUtil {
         Element text = document.createElement(TEXT);
         text.appendChild(document.createTextNode(message.getText()));
         messageElement.appendChild(text);
+        System.out.println("element: " + text.getLastChild().toString());
 
         Element isDeleted = document.createElement(METHOD);
         isDeleted.appendChild(document.createTextNode(message.getMethod()));
@@ -150,7 +150,7 @@ public final class XMLHistoryUtil {
     }
 
     public static synchronized List<Message> getMessages() throws SAXException, IOException, ParserConfigurationException {
-        List<Message> messages = new ArrayList<Message>();
+        List<Message> messages = new ArrayList<>();
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         Document document = documentBuilder.parse(STORAGE_LOCATION);
@@ -171,7 +171,7 @@ public final class XMLHistoryUtil {
     }
 
     public static synchronized List<String> getIds() throws SAXException, IOException, ParserConfigurationException {
-        List<String> ids = new ArrayList<String>();
+        List<String> ids = new ArrayList<>();
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         Document document = documentBuilder.parse(ID_STORAGE_LOCATION);
@@ -215,7 +215,6 @@ public final class XMLHistoryUtil {
                 }
 
             }
-
             Transformer transformer = getTransformer();
 
             DOMSource source = new DOMSource(document);
