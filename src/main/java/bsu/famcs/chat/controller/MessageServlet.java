@@ -60,9 +60,9 @@ public class MessageServlet extends HttpServlet {
         logger.info("token: " + token);
 
         if (token != null && !"".equals(token)) {
-                int index = getIndex(token);
-                logger.info("index " + index);
-            //if (index < MessageStorage.getSize()){
+            int index = getIndex(token);
+            logger.info("index " + index);
+            if (index < IdStorage.getSize()){
                 String messages = formResponse(index);
                 logger.info("response messages: " + messages);
                 response.setContentType(ServletUtil.APPLICATION_JSON);
@@ -71,10 +71,11 @@ public class MessageServlet extends HttpServlet {
                 PrintWriter out = response.getWriter();
                 out.print(messages);
                 out.flush();
-            //}
-            /*else {
+            }
+            else {
+                logger.info("response status: " + 304);
                 response.sendError(HttpServletResponse.SC_NOT_MODIFIED, "no new messages");
-            }*/
+            }
         } else {
             logger.error("bad request");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "'token' parameter needed");

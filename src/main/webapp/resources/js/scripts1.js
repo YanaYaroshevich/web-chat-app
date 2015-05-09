@@ -34,7 +34,7 @@ function restore() {
 }
 
 function getHistory(responseText, continueWith){
-	//if (!(responseText == "")) {
+	if (!(responseText == "")) {
 		console.assert(responseText != null);
 
 		var response = JSON.parse(responseText);
@@ -58,7 +58,7 @@ function getHistory(responseText, continueWith){
 
 		if (response.messages.length > 0)
 			newMessagesFlag = true;
-	//}
+	}
 	createPage();
 	continueWith && continueWith();
 }
@@ -336,12 +336,12 @@ function ajax(method, url, data, continueWith, continueWithError) {
 
 		}*/
 
-		else if(xhr.status != 200) {
+		else if(xhr.status != 200 && xhr.status != 304) {
 			continueWithError('Error on the server side, response ' + xhr.status);
 			return;
 		}
 
-		else if(isError(xhr.responseText)) {
+		else if(isError(xhr.responseText) && xhr.status != 304) {
 			appState.cond = false;
 			continueWithError('Error on the server side, response ' + xhr.responseText);
 			return;
