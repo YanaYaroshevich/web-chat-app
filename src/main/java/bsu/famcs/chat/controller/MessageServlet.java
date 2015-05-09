@@ -60,13 +60,18 @@ public class MessageServlet extends HttpServlet {
         logger.info("Token " + token);
 
         if (token != null && !"".equals(token)) {
-            int index = getIndex(token);
-            logger.info("Index " + index);
-            String messages = formResponse(index);
-            response.setContentType(ServletUtil.APPLICATION_JSON);
-            PrintWriter out = response.getWriter();
-            out.print(messages);
-            out.flush();
+                int index = getIndex(token);
+                logger.info("Index " + index);
+            //if (index < MessageStorage.getSize()){
+                String messages = formResponse(index);
+                response.setContentType(ServletUtil.APPLICATION_JSON);
+                PrintWriter out = response.getWriter();
+                out.print(messages);
+                out.flush();
+            //}
+            /*else {
+                response.sendError(HttpServletResponse.SC_NOT_MODIFIED, "no new messages");
+            }*/
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "'token' parameter needed");
         }
@@ -89,10 +94,10 @@ public class MessageServlet extends HttpServlet {
             MessageStorage.addMessage(message);
             System.out.println(MessageStorage.getStorage().toString());
 
-            //_mutex.lock();
+            _mutex.lock();
             XMLHistoryUtil.addId(message.getId());
             XMLHistoryUtil.addMessage(message);
-            //_mutex.unlock();
+            _mutex.unlock();
 
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (org.json.simple.parser.ParseException | ParserConfigurationException | SAXException | TransformerException e) {
@@ -115,6 +120,36 @@ public class MessageServlet extends HttpServlet {
                 messageToUpdate.setDate(getDate());
                 messageToUpdate.setMethod("DELETE");
                 messageToUpdate.setText("");
+
+                _mutex.lock();
+                XMLHistoryUtil.updateData(messageToUpdate);
+                XMLHistoryUtil.addId(id);
+                _mutex.unlock();
+                IdStorage.addId(id);
+                response.setStatus(HttpServletResponse.SC_OK);
+            } else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task does not exist");
+            }
+        } catch (Exception e) {
+            System.out.println(e.getStackTrace());
+            logger.error(e);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
+
+    @Override
+    protected void doPut (HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        logger.info("doPut");
+        String data = ServletUtil.getMessageBody(request);
+        logger.info(data);
+        try {
+            JSONObject json = stringToJson(data);
+            String id = json.get(ID).toString();
+            Message messageToUpdate = MessageStorage.getMessageById(id);
+            if (messageToUpdate != null) {
+                messageToUpdate.setDate(getDate());
+                messageToUpdate.setMethod("PUT");
+                messageToUpdate.setText(json.get(TEXT).toString());
 
                 _mutex.lock();
                 XMLHistoryUtil.updateData(messageToUpdate);

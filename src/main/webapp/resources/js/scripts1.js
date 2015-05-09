@@ -34,32 +34,32 @@ function restore() {
 }
 
 function getHistory(responseText, continueWith){
-	console.assert(responseText != null);
+	//if (!(responseText == "")) {
+		console.assert(responseText != null);
 
-	var response = JSON.parse(responseText);
+		var response = JSON.parse(responseText);
 
-	appState.token = response.token;
+		appState.token = response.token;
 
-	for (var i = 0; i < response.messages.length; i++){
-		var j = getIndById(response.messages[i].id);
-		if (j != -1)
-			appState.messages[j] = response.messages[i];
-		else
-			appState.messages.push(response.messages[i]);
-	}
+		for (var i = 0; i < response.messages.length; i++) {
+			var j = getIndById(response.messages[i].id);
+			if (j != -1)
+				appState.messages[j] = response.messages[i];
+			else
+				appState.messages.push(response.messages[i]);
+		}
 
-	if(typeof(Storage) == "undefined") {
-		alert('localStorage is not accessible');
-		return;
-	}
-	var item = JSON.parse(localStorage.getItem("Chatting page"));
-	appState.name = item.name;
+		if (typeof(Storage) == "undefined") {
+			alert('localStorage is not accessible');
+			return;
+		}
+		var item = JSON.parse(localStorage.getItem("Chatting page"));
+		appState.name = item.name;
 
-	if(response.messages.length > 0)
-		newMessagesFlag = true;
-
+		if (response.messages.length > 0)
+			newMessagesFlag = true;
+	//}
 	createPage();
-		
 	continueWith && continueWith();
 }
 
@@ -332,12 +332,16 @@ function ajax(method, url, data, continueWith, continueWithError) {
 		if (xhr.readyState !== 4)
 			return;
 
-		if(xhr.status != 200) {
+		/*if (xhr.status == 304){
+
+		}*/
+
+		else if(xhr.status != 200) {
 			continueWithError('Error on the server side, response ' + xhr.status);
 			return;
 		}
 
-		if(isError(xhr.responseText)) {
+		else if(isError(xhr.responseText)) {
 			appState.cond = false;
 			continueWithError('Error on the server side, response ' + xhr.responseText);
 			return;
