@@ -57,14 +57,17 @@ public class MessageServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.info("doGet");
         String token = request.getParameter(TOKEN);
-        logger.info("Token " + token);
+        logger.info("token: " + token);
 
         if (token != null && !"".equals(token)) {
                 int index = getIndex(token);
-                logger.info("Index " + index);
+                logger.info("index " + index);
             //if (index < MessageStorage.getSize()){
                 String messages = formResponse(index);
+                logger.info("response messages: " + messages);
                 response.setContentType(ServletUtil.APPLICATION_JSON);
+                logger.info("response status: " + 200);
+                response.setStatus(HttpServletResponse.SC_OK);
                 PrintWriter out = response.getWriter();
                 out.print(messages);
                 out.flush();
@@ -73,6 +76,7 @@ public class MessageServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_NOT_MODIFIED, "no new messages");
             }*/
         } else {
+            logger.error("bad request");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "'token' parameter needed");
         }
     }
@@ -81,28 +85,24 @@ public class MessageServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.info("doPost");
         String data = ServletUtil.getMessageBody(request);
-        System.out.println("data: " + data);
-        logger.info(data);
+        logger.info("data: " + data);
         try {
             JSONObject json = stringToJson(data);
-            System.out.println("json: " + json);
             json.put(METHOD, "POST");
             Message message = jsonToMessage(json);
-            System.out.println("message: " + message);
 
             IdStorage.addId(message.getId());
             MessageStorage.addMessage(message);
-            System.out.println(MessageStorage.getStorage().toString());
 
             _mutex.lock();
             XMLHistoryUtil.addId(message.getId());
             XMLHistoryUtil.addMessage(message);
             _mutex.unlock();
 
+            logger.info("response status: " + 200);
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (org.json.simple.parser.ParseException | ParserConfigurationException | SAXException | TransformerException e) {
-            System.out.println(e.getStackTrace());
-            logger.error(e);
+            logger.error("bad request");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
@@ -111,7 +111,7 @@ public class MessageServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.info("doDelete");
         String data = ServletUtil.getMessageBody(request);
-        logger.info(data);
+        logger.info("data: " + data);
         try {
             JSONObject json = stringToJson(data);
             String id = json.get(ID).toString();
@@ -126,13 +126,14 @@ public class MessageServlet extends HttpServlet {
                 XMLHistoryUtil.addId(id);
                 _mutex.unlock();
                 IdStorage.addId(id);
+                logger.info("response status: " + 200);
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
+                logger.error("bad request");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task does not exist");
             }
         } catch (Exception e) {
-            System.out.println(e.getStackTrace());
-            logger.error(e);
+            logger.error("bad request");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
@@ -141,7 +142,7 @@ public class MessageServlet extends HttpServlet {
     protected void doPut (HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         logger.info("doPut");
         String data = ServletUtil.getMessageBody(request);
-        logger.info(data);
+        logger.info("data: " + data);
         try {
             JSONObject json = stringToJson(data);
             String id = json.get(ID).toString();
@@ -156,13 +157,14 @@ public class MessageServlet extends HttpServlet {
                 XMLHistoryUtil.addId(id);
                 _mutex.unlock();
                 IdStorage.addId(id);
+                logger.info("response status: " + 200);
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
+                logger.error("bad request");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Task does not exist");
             }
         } catch (Exception e) {
-            System.out.println(e.getStackTrace());
-            logger.error(e);
+            logger.error("bad request");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
