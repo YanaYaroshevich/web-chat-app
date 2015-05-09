@@ -67,6 +67,7 @@ public class MessageServlet extends HttpServlet {
                 logger.info("response messages: " + messages);
                 response.setContentType(ServletUtil.APPLICATION_JSON);
                 logger.info("response status: " + 200);
+                response.setCharacterEncoding("UTF-8");
                 response.setStatus(HttpServletResponse.SC_OK);
                 PrintWriter out = response.getWriter();
                 out.print(messages);
@@ -159,6 +160,7 @@ public class MessageServlet extends HttpServlet {
                 _mutex.unlock();
                 IdStorage.addId(id);
                 logger.info("response status: " + 200);
+
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
                 logger.error("bad request");
