@@ -72,6 +72,7 @@ public class MessageServlet extends HttpServlet {
                 PrintWriter out = response.getWriter();
                 out.print(messages);
                 out.flush();
+
             }
             else {
                 logger.info("response status: " + 304);
