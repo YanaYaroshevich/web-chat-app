@@ -28,3 +28,16 @@ We work with to tables: users (user(id, name)) and messages (message(id, text, d
 When the user writes a message in chat for the first time, we add his/her name in table users with new unique id and then add his/her message in table messages.
  If it is not the first time, we find user by name (name is unique) in table users and then add his/her message with this id in table messages.
  When we restart the server we get all history with the help of function public List<Message> selectAll(){..} in MessageDaoImpl/MessageDao class. We form one table from users and their messages using left join and then form list of messaages.  
+ 
+ Logging:
+ Before starting the program create a table in the database chat:
+ 
+ CREATE TABLE LOGS
+   (USER_ID VARCHAR(20)    NOT NULL,
+    DATED   DATE           NOT NULL,
+    LOGGER  VARCHAR(50)    NOT NULL,
+    LEVEL   VARCHAR(10)    NOT NULL,
+    MESSAGE VARCHAR(1000)  NOT NULL
+   );
+   
+   to see the result use "select * from logs".
