@@ -44,7 +44,7 @@ public final class XMLHistoryUtil {
 
     private XMLHistoryUtil() { }
 
-    public static synchronized void createIdStorage() throws ParserConfigurationException, TransformerException {
+    public static synchronized void createIdStorage() throws ParserConfigurationException, TransformerException, IOException, SAXException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 

@@ -6,8 +6,8 @@ var newMessagesFlag = false;
 
 var uniqueId = function() {
 	var date = Date.now();
-	var random = Math.random() * Math.random();
-	return Math.floor(date * random).toString();
+	var random = Math.random() * (1000 - 1) + 1;
+	return Math.floor(random).toString();
 };
 
 var appState = {
