@@ -20,3 +20,11 @@ On user side with "trash"-icon.
 Method PUT is not allowed.
 
 Switch on the sound! ;)
+
+#Task14
+
+Realization of work with DB:
+We work with to tables: users (user(id, name)) and messages (message(id, text, date, method, userId))
+When the user writes a message in chat for the first time, we add his/her name in table users with new unique id and then add his/her message in table messages.
+ If it is not the first time, we find user by name (name is unique) in table users and then add his/her message with this id in table messages.
+ When we restart the server we get all history with the help of function public List<Message> selectAll(){..} in MessageDaoImpl/MessageDao class. We form one table from users and their messages using left join and then form list of messaages.  
