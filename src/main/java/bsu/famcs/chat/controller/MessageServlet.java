@@ -207,21 +207,18 @@ public class MessageServlet extends HttpServlet {
     private void loadHistory() throws SAXException, IOException, ParserConfigurationException, TransformerException  {
         List<Message> messageList = messageDao.selectAll();
         MessageStorage.addAll(messageList);
-        for (Message msg : messageList){
-            System.out.println(msg.getDate() + " " + msg.getName() + ": " + msg.getText());
-        }
 
         if (XMLHistoryUtil.doesIdStorageExist()){
             List<String> idList = XMLHistoryUtil.getIds();
             IdStorage.addAll(idList);
         } else {
             XMLHistoryUtil.createIdStorage();
-            for (int i = 1; i < 25; i++){
-                XMLHistoryUtil.addId(String.valueOf(i));
-                IdStorage.addId(String.valueOf(i));
+            List<Message> messages = messageDao.selectAll();
+            logger.info(messages);
+            for (int i = 1; i < messages.size(); i++){
+                XMLHistoryUtil.addId(messages.get(i).getId());
+                IdStorage.addId(messages.get(i).getId());
             }
         }
-        List<Message> messages = messageDao.selectAll();
-        logger.info(messages);
     }
 }
