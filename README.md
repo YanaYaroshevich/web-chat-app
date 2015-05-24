@@ -34,10 +34,10 @@ When the user writes a message in chat for the first time, we add his/her name i
  
  CREATE TABLE LOGS
    (USER_ID VARCHAR(20)    NOT NULL,
-    DATED   DATE           NOT NULL,
-    LOGGER  VARCHAR(50)    NOT NULL,
+    DATED   VARCHAR(100)           NOT NULL,
+    LOGGER  VARCHAR(500)    NOT NULL,
     LEVEL   VARCHAR(10)    NOT NULL,
-    MESSAGE VARCHAR(1000)  NOT NULL
+    MESSAGE VARCHAR(100000)  NOT NULL
    );
    
    to see the result use "select * from logs".
